@@ -242,6 +242,40 @@
 .ball-btn{animation:none;opacity:1;transform:none}
 .ball-btn:hover{transform:translateY(-4px) scale(1.06)}
 .ball-btn:active{transform:translateY(-1px) scale(1.02)}
+
+/* ==== ingreso: rueda de auto + crecimiento a pantalla completa ==== */
+.ball-btn,.ballsvg{transform-origin:50% 50%}
+@keyframes wheelSpin{from{transform:rotate(0deg)}to{transform:rotate(1620deg)}}
+@keyframes ballGrow{
+  0%{transform:scale(1)}
+  14%{transform:scale(.84)}
+  100%{transform:scale(var(--grow,26))}
+}
+@keyframes ballBitsOut{to{opacity:0}}
+@keyframes introCopyOut{to{opacity:0;transform:translateY(-6px)}}
+#intro.igniting{cursor:default}
+#intro.igniting .ball-wrap{position:relative;z-index:9}
+#intro.igniting .ball-btn{
+  pointer-events:none;
+  filter:drop-shadow(0 0 110px rgba(46,140,255,.6));
+  animation:ballGrow 1s cubic-bezier(.62,.02,.4,1) .45s both}
+#intro.igniting .ballsvg{animation:wheelSpin 1.45s cubic-bezier(.42,0,.86,.72) both}
+#intro.igniting .ball-txt{animation:ballBitsOut .24s ease both}
+#intro.igniting .ballsvg .pn,
+#intro.igniting .ballsvg .ln,
+#intro.igniting .ballsvg .rim{animation:ballBitsOut .45s ease .5s both}
+#intro.igniting .intro-eyebrow,
+#intro.igniting .cobrand,
+#intro.igniting .intro-content h1,
+#intro.igniting .intro-tag,
+#intro.igniting .intro-hint{animation:introCopyOut .38s ease both}
+#intro.igniting.gone{transition:opacity .4s ease,visibility .4s}
+@media(prefers-reduced-motion:reduce){
+  #intro.igniting .ball-btn,#intro.igniting .ballsvg,#intro.igniting .ball-txt,
+  #intro.igniting .ballsvg .pn,#intro.igniting .ballsvg .ln,#intro.igniting .ballsvg .rim,
+  #intro.igniting .intro-eyebrow,#intro.igniting .cobrand,#intro.igniting .intro-content h1,
+  #intro.igniting .intro-tag,#intro.igniting .intro-hint{animation:none}
+}
 </style>
 </head>
 <body>
@@ -702,8 +736,28 @@
 })();
 </script>
 <script>
-(function(){var i=document.getElementById('intro'),e=document.getElementById('enterBtn'),d=document.getElementById('deck');
-if(e){e.addEventListener('click',function(){if(d)d.scrollTop=0;i.classList.add('gone');setTimeout(function(){i.style.display='none';},850);});}})();
+(function(){
+  var i=document.getElementById('intro'),e=document.getElementById('enterBtn'),d=document.getElementById('deck');
+  if(!e||!i)return;
+  var busy=false;
+  e.addEventListener('click',function(){
+    if(busy)return; busy=true;
+    if(d)d.scrollTop=0;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      i.classList.add('gone');
+      setTimeout(function(){i.style.display='none';},850);
+      return;
+    }
+    var r=e.getBoundingClientRect(),
+        cx=r.left+r.width/2, cy=r.top+r.height/2,
+        far=Math.max(Math.hypot(cx,cy),Math.hypot(innerWidth-cx,cy),
+                     Math.hypot(cx,innerHeight-cy),Math.hypot(innerWidth-cx,innerHeight-cy));
+    e.style.setProperty('--grow',((far/(r.width/2))*1.18).toFixed(2));
+    i.classList.add('igniting');
+    setTimeout(function(){i.classList.add('gone');},1420);
+    setTimeout(function(){i.style.display='none';},1860);
+  });
+})();
 </script>
 </body>
 </html>
